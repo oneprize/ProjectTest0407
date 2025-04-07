@@ -1,10 +1,12 @@
 using UnityEngine;
+using System.Collections;
 
 public class MonsterAI : MonoBehaviour
 {
     public float moveSpeed = 2f;
     public float chaseSpeed = 3f;
     public float detectionRange = 5f;
+    public float stopDistance = 2f;
     public Transform groundCheck;
     public float groundCheckDistance = 1f;
     public LayerMask groundLayer;
@@ -15,6 +17,8 @@ public class MonsterAI : MonoBehaviour
 
     private float decisionTime = 0f;
     private float decisionInterval = 2f;
+
+    private bool isAttacking = false;
 
     private enum State { Idle, MoveLeft, MoveRight }
     private State currentState = State.Idle;
@@ -31,11 +35,24 @@ public class MonsterAI : MonoBehaviour
     {
         if (player == null) return;
 
+        // 공격 중이면 멈춤
+        if (isAttacking)
+        {
+            rb.linearVelocity = Vector2.zero;
+            return;
+        }
+
         float distanceToPlayer = Vector2.Distance(transform.position, player.position);
 
         // === 플레이어 감지 시 추적 ===
         if (distanceToPlayer <= detectionRange)
         {
+            if (distanceToPlayer <= stopDistance)
+            {
+                rb.linearVelocity = new Vector2(0f, rb.linearVelocity.y);
+                return;
+            }
+
             float dir = Mathf.Sign(player.position.x - transform.position.x);
 
             // 땅 없으면 추적 중지
@@ -48,7 +65,7 @@ public class MonsterAI : MonoBehaviour
 
             rb.linearVelocity = new Vector2(dir * chaseSpeed, rb.linearVelocity.y);
             transform.localScale = new Vector3(dir > 0 ? 1 : -1, 1, 1);
-            return; // 추적 중이면 순찰로직 스킵
+            return;
         }
 
         // === 순찰 상태 ===
@@ -87,7 +104,7 @@ public class MonsterAI : MonoBehaviour
     void ChooseNextState()
     {
         decisionTime = 0f;
-        int random = Random.Range(0, 3); // 0: Idle, 1: Left, 2: Right
+        int random = Random.Range(0, 3);
         currentState = (State)random;
         decisionInterval = Random.Range(1f, 3f);
     }
@@ -102,6 +119,21 @@ public class MonsterAI : MonoBehaviour
             currentState = State.MoveLeft;
     }
 
+    public void StartAttack(float duration)
+    {
+        StartCoroutine(AttackRoutine(duration));
+    }
+
+    private IEnumerator AttackRoutine(float duration)
+    {
+        isAttacking = true;
+        rb.linearVelocity = Vector2.zero;
+
+        yield return new WaitForSeconds(duration);
+
+        isAttacking = false;
+    }
+
     void OnDrawGizmosSelected()
     {
         if (groundCheck != null)
@@ -110,8 +142,10 @@ public class MonsterAI : MonoBehaviour
             Gizmos.DrawLine(groundCheck.position, groundCheck.position + Vector3.down * groundCheckDistance);
         }
 
-        // 감지 범위 시각화
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, detectionRange);
+
+        Gizmos.color = Color.cyan;
+        Gizmos.DrawWireSphere(transform.position, stopDistance);
     }
 }

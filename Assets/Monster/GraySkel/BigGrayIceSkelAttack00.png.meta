@@ -147,7 +147,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      BigGrayIceSkelAttack00_0: -1852796114440974360
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

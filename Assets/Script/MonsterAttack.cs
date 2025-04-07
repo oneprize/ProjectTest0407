@@ -4,36 +4,44 @@ public class MonsterAttack : MonoBehaviour
 {
     public int damage = 10;
     public float attackCooldown = 2f;
-
     private float lastAttackTime = -Mathf.Infinity;
-    private Animator animator;
+    private Collider2D attackHitbox;
 
-    private void Start()
+    void Start()
     {
-        // 애니메이션 재생용, 상위 오브젝트에서 Animator 가져옴
-        animator = GetComponentInParent<Animator>();
+        attackHitbox = GetComponent<Collider2D>();
+        attackHitbox.enabled = false; // 기본은 꺼둠
     }
 
-    private void OnTriggerStay2D(Collider2D other)
+    public void EnableHitbox()
+    {
+        attackHitbox.enabled = true;
+    }
+
+    public void DisableHitbox()
+    {
+        attackHitbox.enabled = false;
+    }
+
+    private void OnTriggerEnter2D(Collider2D other)
     {
         if (Time.time - lastAttackTime < attackCooldown) return;
 
         if (other.CompareTag("Player"))
         {
             IDamageable target = other.GetComponent<IDamageable>();
+
             if (target != null)
             {
                 target.TakeDamage(damage);
                 lastAttackTime = Time.time;
-
-                //  공격 애니메이션 실행!
-                if (animator != null)
-                {
-                    animator.SetTrigger("Attack");
-                }
-
                 Debug.Log("몬스터가 플레이어를 공격!");
+            }
+            else
+            {
+                Debug.LogWarning("IDamageable이 없는 오브젝트가 히트박스에 들어왔습니다: " + other.name);
             }
         }
     }
+
 }
