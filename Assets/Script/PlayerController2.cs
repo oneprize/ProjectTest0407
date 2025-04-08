@@ -1,5 +1,6 @@
 using UnityEngine;
-using static IDamageable;
+using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class PlayerController2 : MonoBehaviour, IDamageable
 {
@@ -12,12 +13,17 @@ public class PlayerController2 : MonoBehaviour, IDamageable
     private int jumpCount;
     private bool isGrounded;
     private bool wasGrounded;
+    private bool isDead = false;
 
     private Rigidbody2D rb;
     private Animator animator;
 
     [SerializeField] private Transform groundCheck;
     [SerializeField] private LayerMask groundLayer;
+    public Slider hpBar;
+
+    //  Game Over UI 연결용
+    public GameObject gameOverUI;
 
     void Awake()
     {
@@ -38,23 +44,39 @@ public class PlayerController2 : MonoBehaviour, IDamageable
         animator = GetComponent<Animator>();
         jumpCount = maxJumps;
         currentHP = maxHP;
+
+        if (hpBar != null)
+        {
+            hpBar.maxValue = maxHP;
+            hpBar.value = currentHP;
+        }
+
+        // 게임 오버 UI 꺼두기
+        if (gameOverUI != null)
+            gameOverUI.SetActive(false);
     }
 
     void Update()
     {
-        // 이동 입력
+        if (isDead)
+        {
+            // R 키로 씬 재시작
+            if (Input.GetKeyDown(KeyCode.R))
+            {
+                SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+            }
+            return;
+        }
+
         float moveX = Input.GetAxisRaw("Horizontal");
         rb.linearVelocity = new Vector2(moveX * moveSpeed, rb.linearVelocity.y);
 
-        // 애니메이션
         if (animator != null)
             animator.SetFloat("Speed", Mathf.Abs(moveX));
 
-        // 좌우 반전
         if (moveX != 0)
             transform.localScale = new Vector3(Mathf.Sign(moveX), 1, 1);
 
-        // 바닥 체크
         isGrounded = Physics2D.OverlapCircle(groundCheck.position, 0.15f, groundLayer);
 
         if (isGrounded && !wasGrounded)
@@ -64,30 +86,49 @@ public class PlayerController2 : MonoBehaviour, IDamageable
 
         wasGrounded = isGrounded;
 
-        // 점프
         if (Input.GetButtonDown("Jump") && jumpCount > 0)
         {
             rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
             jumpCount--;
         }
 
-        // 점프 버튼 짧게 누르면 낮게 뜀
         if (Input.GetButtonUp("Jump") && rb.linearVelocity.y > 0)
         {
             rb.linearVelocity = new Vector2(rb.linearVelocity.x, rb.linearVelocity.y * 0.5f);
         }
     }
 
-    // === 공격 받는 기능 ===
     public void TakeDamage(int damage)
     {
+        if (isDead) return;
+
         currentHP -= damage;
+        currentHP = Mathf.Max(0, currentHP);
+
+        if (hpBar != null)
+        {
+            hpBar.value = currentHP;
+        }
+
         Debug.Log("플레이어 피격! 남은 HP: " + currentHP);
 
         if (currentHP <= 0)
         {
             Debug.Log("플레이어 사망");
-            // TODO: 게임 오버 처리
+
+            isDead = true;
+
+            if (animator != null)
+            {
+                animator.SetTrigger("Die");
+            }
+
+            rb.linearVelocity = Vector2.zero;
+
+            if (gameOverUI != null)
+            {
+                gameOverUI.SetActive(true); //  게임 오버 UI 표시
+            }
         }
     }
 }

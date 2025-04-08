@@ -4,44 +4,61 @@ public class MonsterAttack : MonoBehaviour
 {
     public int damage = 10;
     public float attackCooldown = 2f;
+
     private float lastAttackTime = -Mathf.Infinity;
-    private Collider2D attackHitbox;
+    private Animator animator;
+    private Transform target;
+
+    private bool canAttack = true;
 
     void Start()
     {
-        attackHitbox = GetComponent<Collider2D>();
-        attackHitbox.enabled = false; // 기본은 꺼둠
+        animator = GetComponent<Animator>();
+        target = GameObject.FindGameObjectWithTag("Player")?.transform;
     }
 
-    public void EnableHitbox()
+    void Update()
     {
-        attackHitbox.enabled = true;
-    }
+        if (target == null) return;
 
-    public void DisableHitbox()
-    {
-        attackHitbox.enabled = false;
-    }
+        float distance = Vector2.Distance(transform.position, target.position);
 
-    private void OnTriggerEnter2D(Collider2D other)
-    {
-        if (Time.time - lastAttackTime < attackCooldown) return;
-
-        if (other.CompareTag("Player"))
+        if (distance <= 1f && Time.time - lastAttackTime >= attackCooldown)
         {
-            IDamageable target = other.GetComponent<IDamageable>();
+            lastAttackTime = Time.time;
 
-            if (target != null)
+            if (animator != null)
             {
-                target.TakeDamage(damage);
-                lastAttackTime = Time.time;
-                Debug.Log("몬스터가 플레이어를 공격!");
+                animator.SetTrigger("Attack");
             }
-            else
+
+            // 애니메이션 타이밍 동안 이동 중지
+            MonsterAI ai = GetComponentInParent<MonsterAI>();
+            if (ai != null)
             {
-                Debug.LogWarning("IDamageable이 없는 오브젝트가 히트박스에 들어왔습니다: " + other.name);
+                ai.StartAttack(attackCooldown);
+            }
+
+            Debug.Log("몬스터가 공격 애니메이션 실행!");
+        }
+    }
+
+    // 애니메이션 이벤트에서 호출될 데미지 적용 함수
+    public void DealDamage()
+    {
+        if (target == null) return;
+
+        float distance = Vector2.Distance(transform.position, target.position);
+        if (distance <= 1.5f)
+        {
+            IDamageable damageable = target.GetComponent<IDamageable>();
+            if (damageable != null)
+            {
+                damageable.TakeDamage(damage);
+                Debug.Log("애니메이션 이벤트로 데미지 적용");
             }
         }
     }
 
+    
 }
