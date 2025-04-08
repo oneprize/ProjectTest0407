@@ -197,7 +197,7 @@ GameObject:
   - component: {fileID: 148999907}
   - component: {fileID: 148999906}
   - component: {fileID: 148999905}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Wall
   m_TagString: Ground
   m_Icon: {fileID: 0}
@@ -1150,6 +1150,11 @@ Transform:
   - {fileID: 1685034069}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!4 &226843660 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 1214394571730484695, guid: 3168a7ac90a8fe547866e3afab96f606, type: 3}
+  m_PrefabInstance: {fileID: 1177136591}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &374462472
 GameObject:
   m_ObjectHideFlags: 0
@@ -1957,8 +1962,36 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 5852695032496613250, guid: 3168a7ac90a8fe547866e3afab96f606, type: 3}
       insertIndex: -1
       addedObject: {fileID: 374462473}
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 6565984824038129042, guid: 3168a7ac90a8fe547866e3afab96f606, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1177136593}
   m_SourcePrefab: {fileID: 100100000, guid: 3168a7ac90a8fe547866e3afab96f606, type: 3}
+--- !u!1 &1177136592 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 6565984824038129042, guid: 3168a7ac90a8fe547866e3afab96f606, type: 3}
+  m_PrefabInstance: {fileID: 1177136591}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1177136593
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1177136592}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 42f8146fa3bd32c42b2f8f156c0bac13, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  dashDistance: 3
+  dashDuration: 0.2
+  maxDashCount: 2
+  groundLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  groundCheck: {fileID: 226843660}
+  groundCheckRadius: 0.2
 --- !u!1 &1190461882
 GameObject:
   m_ObjectHideFlags: 0
